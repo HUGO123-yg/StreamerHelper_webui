@@ -5,6 +5,7 @@
     "recycleCheckTime": 1800,
     "videoPartLimitSize": 100,
     "logLevel": "error",
+    "serverPort": 3000,
     "push": {
       "mail": {
         "enable": true,

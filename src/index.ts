@@ -12,6 +12,8 @@ import { Scheduler } from "@/type/scheduler";
 import { Recorder } from "@/engine/message";
 import { FileStatus } from "@/type/fileStatus";
 import { FileHound } from "@/util/utils"
+import { initServer } from "@/http"
+import systemStatusScheduler from "@/schedule/systemStatus"
 
 
 type Schedulers = {
@@ -73,10 +75,22 @@ export class App {
                 await this.initStreamDisconnect()
                 await this.initSyncFileStatus()
                 await this.initSchedule()
+                await this.initServer()
             } catch (e) {
                 return reject(e)
             }
         })
+    }
+    
+    /**
+     * 初始化HTTP和WebSocket服务器
+     * 在应用启动时创建并启动服务器
+     */
+    initServer = async () => {
+        this._logger.info(`Initializing HTTP & WebSocket Server`)
+        const port = global.config.serverPort || 3000
+        initServer(port)
+        this._logger.info(`HTTP & WebSocket Server initialized on port ${port}`)
     }
 
     initUser = async () => {

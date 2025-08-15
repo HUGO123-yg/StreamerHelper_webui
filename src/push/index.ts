@@ -1,6 +1,7 @@
 import { LogLevel } from "@/type/config";
 import { mail } from "@/push/mail";
 import { wechat } from "@/push/wechat";
+import { s3 } from "@/push/s3";
 import { getLogger } from "@/log";
 
 type AllowTypes = keyof typeof global.config.StreamerHelper.push
@@ -11,7 +12,8 @@ const enables = Object.keys(pushConfig).filter(elem => pushConfig[elem as AllowT
 const pushFuncMap = new Map<AllowTypes, PushFunc>(
     [
         ["mail", mail],
-        ["wechat", wechat]
+        ["wechat", wechat],
+        ["s3", s3]
     ]
 )
 

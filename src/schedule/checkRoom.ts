@@ -2,7 +2,7 @@ import * as dayjs from "dayjs";
 import * as chalk from 'chalk'
 
 import { getStreamUrl } from "@/engine/getStreamUrl";
-import { RoomStatus } from "@/engine/roomStatus";
+import { RoomStatus, updateRoomStatus } from "@/engine/roomStatus";
 import { getExtendedLogger } from "@/log";
 import { Scheduler } from "@/type/scheduler";
 import { Recorder } from "@/engine/message";
@@ -43,6 +43,9 @@ export default new Scheduler(interval, async function () {
             recorderTask.streamUrl = await getStreamUrl(room.roomUrl)
             // with no-error, the room online
             logger.debug(`stream ${JSON.stringify(recorderTask, null, 2)}`)
+            // 使用updateRoomStatus更新房间状态为在线
+            updateRoomStatus(room.name, 1);
+            
             if (RoomStatus.has(room.name)) {
                 // 上次检测后认为房间在线
                 if (curRecorder) {
@@ -63,7 +66,6 @@ export default new Scheduler(interval, async function () {
                 }
             } else {
                 // 上次检测后认为房间不在线
-                RoomStatus.set(room.name, 1)
                 if (curRecorder) {
                     // 之前认为不在线，但存在 Recorder，这种情况不应该出现
                     // Recorder 可能未退出
@@ -77,7 +79,8 @@ export default new Scheduler(interval, async function () {
             }
         } catch (e) {
             // 房间不在线，进入投稿流程
-            RoomStatus.delete(room.name)
+            // 使用updateRoomStatus更新房间状态为不在线
+            updateRoomStatus(room.name, 0)
             if (curRecorder) {
                 if (curRecorder.recorderStat()) {
                     // 房间不在线，但仍在录制，先停止录制

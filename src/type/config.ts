@@ -19,11 +19,21 @@ export interface Config {
             wechat: {
                 enable: boolean,
                 sendKey: string
+            },
+            s3: {
+                enable: boolean,
+                endpoint: string,
+                accessKeyId: string,
+                secretAccessKey: string,
+                region: string,
+                bucket: string,
+                prefix: string
             }
         }
     },
     personInfo: PersonInfo,
-    streamerInfo: StreamerInfo[]
+    streamerInfo: StreamerInfo[],
+    serverPort?: number
 }
 
 export interface PersonInfo {

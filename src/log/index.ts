@@ -1,6 +1,8 @@
 import { log4js } from "@/log/config";
 import { pushMsg } from "@/push";
 import { LogLevel } from "@/type/config";
+import { io } from "@/http";
+import { broadcastLog as wsBroadcastLog } from "@/http/websocket";
 
 // log4js/lib/levels.js
 const ALL_VALUE = Number.MIN_VALUE,
@@ -34,6 +36,23 @@ export function getExtendedLogger(category?: string | undefined): log4js.Logger 
     return extend(log4js.getLogger(category), extendHandler)
 }
 
+/**
+ * 通过WebSocket广播日志消息
+ * @param level 日志级别
+ * @param args 日志内容
+ */
+export function broadcastLog(level: LogLevel, ...args: string[]) {
+    // 确保io已初始化
+    if (io) {
+        const message = args.join(' ');
+        wsBroadcastLog(io, { 
+            level, 
+            message,
+            timestamp: new Date().toISOString() 
+        });
+    }
+}
+
 export function getLogger(category?: string): log4js.Logger {
     return log4js.getLogger(category)
 }
@@ -53,7 +72,12 @@ const extendHandler: ProxyHandler<log4js.Logger> = {
         return (...args: string[]) => {
 
             if (level && level.value >= levelVal) {
-                process.nextTick(() => pushMsg(propStr as LogLevel, ...args))
+                process.nextTick(() => {
+                    // 发送推送消息
+                    pushMsg(propStr as LogLevel, ...args);
+                    // 广播日志消息
+                    broadcastLog(propStr as LogLevel, ...args);
+                });
             }
 
             return ori.apply(obj, args)
